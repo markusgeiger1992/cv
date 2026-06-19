@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Markus Geiger | Team Coordinator Software Development & Tech Lead</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ── Password Screen ── */
+        .pw-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pw-overlay.hidden { display: none; }
+        .pw-box {
+            text-align: center;
+            max-width: 380px;
+            padding: 2.5rem;
+        }
+        .pw-box h2 {
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .pw-box p {
+            color: rgba(255,255,255,0.5);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        .pw-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.06);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .pw-input:focus { border-color: #3b82f6; }
+        .pw-input.error { border-color: #ef4444; animation: shake 0.4s ease; }
+        .pw-btn {
+            width: 100%;
+            margin-top: 0.75rem;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .pw-btn:hover { opacity: 0.9; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .content-hidden { display: none; }
+
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --accent-light: #60a5fa;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --gradient-1: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            --gradient-accent: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--surface-alt);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Navigation ── */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-brand span { color: var(--accent-light); }
+
+        .nav-links {
+            display: flex;
+            gap: 0.25rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: white;
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* ── Hero ── */
+        .hero {
+            background: var(--gradient-1);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding-top: 64px;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%);
+            animation: pulse 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-photo {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            border: 3px solid rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1), 0 8px 30px rgba(0,0,0,0.3);
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.75rem;
+        }
+
+        .hero-text .subtitle {
+            font-size: 1.25rem;
+            color: var(--accent-light);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-text .tagline {
+            font-size: 1.05rem;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.7;
+            max-width: 520px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-4px);
+            border-color: rgba(59,130,246,0.3);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-visual {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .code-window {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .code-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .code-dot.red { background: #ff5f57; }
+        .code-dot.yellow { background: #febc2e; }
+        .code-dot.green { background: #28c840; }
+
+        .code-body {
+            padding: 1.25rem;
+            font-size: 0.82rem;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .code-body .keyword { color: #c792ea; }
+        .code-body .string { color: #c3e88d; }
+        .code-body .function { color: #82aaff; }
+        .code-body .comment { color: rgba(255,255,255,0.3); }
+        .code-body .number { color: #f78c6c; }
+        .code-body .type { color: #ffcb6b; }
+
+        .contact-chips {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 100px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .chip:hover {
+            background: rgba(59,130,246,0.15);
+            border-color: rgba(59,130,246,0.3);
+            color: white;
+        }
+
+        /* ── Sections ── */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+        }
+
+        /* ── Timeline ── */
+        .timeline {
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), var(--border));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2.5rem;
+            cursor: pointer;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -3rem;
+            top: 8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 3px solid var(--accent);
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover .timeline-dot {
+            background: var(--accent);
+            box-shadow: 0 0 0 6px var(--accent-glow);
+        }
+
+        .timeline-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        .timeline-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            transform: translateX(4px);
+        }
+
+        .timeline-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-role {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.15rem;
+        }
+
+        .timeline-company {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .timeline-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .timeline-item.open .timeline-details {
+            max-height: 800px;
+        }
+
+        .timeline-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            color: var(--accent);
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+
+        .timeline-toggle svg {
+            transition: transform 0.3s;
+        }
+
+        .timeline-item.open .timeline-toggle svg {
+            transform: rotate(180deg);
+        }
+
+        .detail-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .detail-list li {
+            position: relative;
+            padding: 0.6rem 0 0.6rem 1.5rem;
+            font-size: 0.92rem;
+            color: var(--text);
+            line-height: 1.6;
+            border-bottom: 1px solid var(--surface-alt);
+        }
+
+        .detail-list li:last-child { border-bottom: none; }
+
+        .detail-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 1.1rem;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .metric {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            font-weight: 600;
+            font-size: 0.82rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Skills Grid ── */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .skill-category {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: all 0.3s;
+        }
+
+        .skill-category:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        }
+
+        .skill-category-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .skill-bar-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .skill-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .skill-bar-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text);
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .skill-bar-track {
+            flex: 1;
+            height: 8px;
+            background: var(--surface-alt);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .skill-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--gradient-accent);
+            width: 0%;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .skill-bar-value {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* ── Projects Section ── */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .project-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .project-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border-color: transparent;
+        }
+
+        .project-banner {
+            height: 8px;
+            background: var(--gradient-accent);
+        }
+
+        .project-card[data-color="green"] .project-banner {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        .project-card[data-color="orange"] .project-banner {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        }
+
+        .project-card[data-color="purple"] .project-banner {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        }
+
+        .project-body {
+            padding: 1.75rem;
+        }
+
+        .project-phase {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .project-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .project-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.65;
+            margin-bottom: 1.25rem;
+        }
+
+        .project-features {
+            list-style: none;
+        }
+
+        .project-features li {
+            font-size: 0.85rem;
+            color: var(--text);
+            padding: 0.4rem 0;
+            padding-left: 1.4rem;
+            position: relative;
+        }
+
+        .project-features li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .project-tech span {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.3rem 0.6rem;
+            background: var(--surface-alt);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Motivation Section ── */
+        .motivation-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .motivation-text {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .motivation-text p {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .motivation-text p:last-child { margin-bottom: 0; }
+
+
+        /* ── Education ── */
+        .edu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .edu-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: all 0.3s;
+        }
+
+        .edu-card:hover {
+            border-color: var(--accent);
+        }
+
+        .edu-degree {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .edu-school {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .edu-detail {
+            font-size: 0.82rem;
+            color: var(--text-light);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            background: var(--primary);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer h2 {
+            font-size: 1.8rem;
+            color: white;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer p {
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.5rem;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .footer-link:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* ── Animations ── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .hero-content { grid-template-columns: 1fr; gap: 2rem; }
+            .hero-text h1 { font-size: 2.5rem; }
+            .hero-visual { order: -1; }
+            .motivation-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .projects-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            .hero-stats { grid-template-columns: 1fr; }
+            .hero-text h1 { font-size: 2rem; }
+            .section { padding: 3rem 1.25rem; }
+            .skills-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Print ── */
+        @media print {
+            .nav, .hero::before, .hero::after { display: none; }
+            .hero { min-height: auto; padding: 2rem 0; }
+            .timeline-details { max-height: none !important; }
+            .fade-in { opacity: 1 !important; transform: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Password Screen -->
+<div class="pw-overlay" id="pwOverlay">
+    <div class="pw-box">
+        <h2>Markus Geiger</h2>
+        <p>Dieser Lebenslauf ist passwortgeschützt.</p>
+        <input type="password" class="pw-input" id="pwInput" placeholder="Passwort eingeben" autofocus>
+        <button class="pw-btn" id="pwBtn">Zugang</button>
+    </div>
+</div>
+
+<div id="cvContent" class="content-hidden">
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+    <div class="nav-inner">
+        <div class="nav-brand">Markus <span>Geiger</span></div>
+        <ul class="nav-links">
+            <li><a href="#experience" class="active">Erfahrung</a></li>
+            <li><a href="#skills">Kompetenzen</a></li>
+            <li><a href="#projects">Projektideen</a></li>
+            <li><a href="#motivation">Motivation</a></li>
+            <li><a href="#education">Bildung</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <img src="markus_geiger_photo.jpeg" alt="Markus Geiger" class="hero-photo">
+            <h1>Markus<br>Geiger</h1>
+            <div class="subtitle">Team Coordinator Software Development & Tech Lead</div>
+            <p class="tagline">
+                Digital-Stratege mit 9+ Jahren Erfahrung an der Schnittstelle von Business und Technologie.
+                Ich verbinde technisches Verständnis mit unternehmerischem Denken &mdash; von der API-Integration
+                bis zur Plattformstrategie, von der KI-Automatisierung bis zur Team-Koordination.
+            </p>
+            <div class="contact-chips">
+                <a class="chip" href="mailto:markusgeiger@t-online.de">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                    markusgeiger@t-online.de
+                </a>
+                <a class="chip" href="tel:+491706922229">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    0170 6922229
+                </a>
+                <span class="chip">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Bielefeld
+                </span>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="code-window">
+                <div class="code-header">
+                    <span class="code-dot red"></span>
+                    <span class="code-dot yellow"></span>
+                    <span class="code-dot green"></span>
+                </div>
+                <div class="code-body">
+                    <span class="comment">// markus_geiger.config</span><br><br>
+                    <span class="keyword">const</span> <span class="type">profile</span> = {<br>
+                    &nbsp;&nbsp;role: <span class="string">"Tech Lead & Coordinator"</span>,<br>
+                    &nbsp;&nbsp;focus: [<span class="string">"Retail Solutions"</span>, <span class="string">"Innovation"</span>],<br>
+                    &nbsp;&nbsp;teamSize: <span class="number">10</span>,<br>
+                    &nbsp;&nbsp;automations: <span class="number">20</span>,<br>
+                    &nbsp;&nbsp;apiIntegrations: <span class="keyword">true</span>,<br>
+                    &nbsp;&nbsp;aiDriven: <span class="keyword">true</span>,<br>
+                    &nbsp;&nbsp;languages: [<span class="string">"DE"</span>, <span class="string">"EN"</span>, <span class="string">"RU"</span>, <span class="string">"ES"</span>],<br>
+                    &nbsp;&nbsp;<span class="function">buildRetailFuture</span>() { <span class="keyword">return</span> <span class="string">"Let's go!"</span>; }<br>
+                    };
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number">9+</div>
+                    <div class="stat-label">Jahre Digital</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">Team-Mitglieder</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">20+</div>
+                    <div class="stat-label">Automations</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Experience -->
+<section class="section" id="experience">
+    <div class="section-header fade-in">
+        <div class="section-label">Berufserfahrung</div>
+        <h2 class="section-title">Von Marketing zu Tech Leadership</h2>
+    </div>
+
+    <div class="timeline">
+        <!-- PsyCommerce -->
+        <div class="timeline-item open fade-in">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+                <div class="timeline-date">2024 &mdash; heute</div>
+                <div class="timeline-role">Projektleiter & Head of Automation</div>
+                <div class="timeline-company">PsyCommerce / ABxpert</div>
+                <button class="timeline-toggle" onclick="toggleTimeline(this)">
+                    Details anzeigen
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="timeline-details">
+                    <ul class="detail-list">
+                        <li><strong>Technische Teamkoordination:</strong> Steuerung eines ~10-köpfigen Teams aus Entwicklern, Designern und Freelancern. Verantwortlich für Briefings, QA, Code-Reviews und Assessment-Center bei der Auswahl neuer Entwickler.</li>
+                        <li><strong>Prozessautomatisierung & API-Integration:</strong> Konzeption und Umsetzung von über 20 automatisierten Prozessen via Make.com &mdash; inkl. API-Anbindungen (Shopify Webhooks, Google Sheets, Asana API) und Webhook-Konfiguration. <span class="metric">-40% manuelle Aufwände</span></li>
+                        <li><strong>KI-Integration:</strong> Entwicklung interner KI-Tools und praxisnaher Prompts zur Team-Unterstützung und Workflow-Optimierung.</li>
+                        <li><strong>Stakeholder-Management:</strong> Strategische Betreuung von C-Level-Kunden (3&ndash;100 Mio. &euro; Umsatz) als zentrale Schnittstelle zwischen Business und Entwicklung.</li>
+                        <li><strong>A/B-Testing-Roadmap:</strong> Konzeption und Steuerung datenbasierter Test-Roadmaps f&uuml;r Shopify-Plattformen. <span class="metric">+20% Uplift</span> <span class="metric">58% Winrate</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- porta Marketing -->
+        <div class="timeline-item fade-in">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+                <div class="timeline-date">2020 &mdash; 2024</div>
+                <div class="timeline-role">Performance Marketing Manager</div>
+                <div class="timeline-company">porta Möbel</div>
+                <button class="timeline-toggle" onclick="toggleTimeline(this)">
+                    Details anzeigen
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="timeline-details">
+                    <ul class="detail-list">
+                        <li><strong>Omnichannel-Plattformstrategie:</strong> Mitentwicklung der kanalübergreifenden Marketing-Strategie mit Retail-Fokus (Online + stationärer Handel). <span class="metric">+20% Effektivität</span></li>
+                        <li><strong>Funnel-Architektur:</strong> Aufbau eines Conversion-Funnel-Modells zur Meta-Kampagnensteuerung; messbare Umsatzsteigerung online und stationär.</li>
+                        <li><strong>Datengetriebene Innovation:</strong> Top-of-Funnel-Lösung via Dynamic Product Ads. <span class="metric">-90% Sitzungskosten</span></li>
+                        <li><strong>Retail Media / Intrapreneurship:</strong> Einführung von „Marketing as a Service" als internes Profitcenter &mdash; ein B2B-Modell für Retail-Partner mit vollständiger P&L-Verantwortung. <span class="metric">+250.000&euro; Umsatz</span></li>
+                        <li><strong>SEO & Content:</strong> Konzeption des Websitebereichs „Stilwelt" auf Basis von SEO-Suchvolumen-KPIs.</li>
+                        <li><strong>Projektmanagement:</strong> Agile Arbeitsweise mit Jira/Kanban; Zusammenarbeit mit Entwicklungsteams und externen Dienstleistern.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- porta Onsite -->
+        <div class="timeline-item fade-in">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+                <div class="timeline-date">2019 &mdash; 2020</div>
+                <div class="timeline-role">Onsite Marketing Manager</div>
+                <div class="timeline-company">porta Möbel</div>
+                <button class="timeline-toggle" onclick="toggleTimeline(this)">
+                    Details anzeigen
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="timeline-details">
+                    <ul class="detail-list">
+                        <li>Konzeption und Durchführung datenbasierter A/B-Tests zur Landingpage-Optimierung. <span class="metric">+30% Micro-Conversion</span> <span class="metric">60% Winrate</span></li>
+                        <li>SEO-basierte Websiteentwicklung (porta „Stilwelt") anhand von Suchvolumen-KPIs.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SKRIP -->
+        <div class="timeline-item fade-in">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+                <div class="timeline-date">2022 &mdash; heute</div>
+                <div class="timeline-role">Gründer</div>
+                <div class="timeline-company">SKRIP Marketing (Nebentätigkeit)</div>
+                <button class="timeline-toggle" onclick="toggleTimeline(this)">
+                    Details anzeigen
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="timeline-details">
+                    <ul class="detail-list">
+                        <li><strong>Agenturaufbau & Kundenmanagement:</strong> Performance-Marketing-Agentur für Meta Ads, Shopify & Funnel-Optimierung (FMCG & High-Ticket).</li>
+                        <li><strong>Tool-Entwicklung:</strong> Eigenständige Entwicklung von Chrome Extensions (Ad-Intelligence-Tool mit Supabase-Backend), KI-gestützte Applikationen (Rezeptgenerator mit Google OAuth), automatisierte Lead-Listen-Pipelines.</li>
+                        <li><strong>E-Commerce-Plattformen:</strong> 2 Shopify-Shops inkl. Custom Sections (HTML/CSS/Liquid), CRM-Integration (Klaviyo, Mailchimp). <span class="metric">+30% Conversion</span></li>
+                        <li><strong>Lead Generation:</strong> Funnels mit über 5.000 Leads. <span class="metric">&lt;3&euro; CPL</span></li>
+                        <li><strong>Local SEO & Bewertungsmanagement:</strong> Aufsetzen von Google My Business und Bewertungsstrategien für Retail-Kunden.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weitere -->
+        <div class="timeline-item fade-in">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+                <div class="timeline-date">2016 &mdash; 2019</div>
+                <div class="timeline-role">Weitere Stationen</div>
+                <div class="timeline-company">Amazon FBA (Co-Founder) &middot; Brodos (Market Ops) &middot; ChapmanBlack London (Recruitment)</div>
+                <button class="timeline-toggle" onclick="toggleTimeline(this)">
+                    Details anzeigen
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="timeline-details">
+                    <ul class="detail-list">
+                        <li><strong>Amazon FBA:</strong> Gründung, Produktrecherche, Marketingstrategien (Amazon PPC, Social Media). Skalierung auf &gt;15.000&euro;/Monat Umsatz.</li>
+                        <li><strong>Brodos:</strong> Markt-/Wettbewerbsanalysen im Marketplace-Umfeld; Schnittstelle Einkauf/Vertrieb/Entwicklung; erster Marketplace-Kunde akquiriert.</li>
+                        <li><strong>ChapmanBlack:</strong> 6-monatiges Auslandspraktikum in London. Erfolgreiche Einstellung von 4 Recruitment Consultants. Interkulturelle Kommunikation.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Skills -->
+<section class="section" id="skills" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); max-width: 100%; padding-left: 0; padding-right: 0;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+        <div class="section-header fade-in">
+            <div class="section-label">Kernkompetenzen</div>
+            <h2 class="section-title">Technologie trifft Strategie</h2>
+        </div>
+        <div class="skills-grid fade-in">
+            <div class="skill-category">
+                <div class="skill-category-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+                    Entwicklung & Integration
+                </div>
+                <div class="skill-bar-list">
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">API & Webhooks</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="70"></div></div>
+                        <span class="skill-bar-value">7/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Datenbanken</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="50"></div></div>
+                        <span class="skill-bar-value">5/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">HTML / CSS / JS</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="40"></div></div>
+                        <span class="skill-bar-value">4/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Google OAuth / SSO</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="50"></div></div>
+                        <span class="skill-bar-value">5/10</span>
+                    </div>
+                </div>
+            </div>
+            <div class="skill-category">
+                <div class="skill-category-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    E-Commerce & Plattformen
+                </div>
+                <div class="skill-bar-list">
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">A/B Testing & CRO</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="90"></div></div>
+                        <span class="skill-bar-value">9/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Shopify</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="80"></div></div>
+                        <span class="skill-bar-value">8/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">WooCommerce</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="50"></div></div>
+                        <span class="skill-bar-value">5/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Local SEO</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="70"></div></div>
+                        <span class="skill-bar-value">7/10</span>
+                    </div>
+                </div>
+            </div>
+            <div class="skill-category">
+                <div class="skill-category-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+                    KI & Automatisierung
+                </div>
+                <div class="skill-bar-list">
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">KI & Automatisierung</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="70"></div></div>
+                        <span class="skill-bar-value">7/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Make.com</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="80"></div></div>
+                        <span class="skill-bar-value">8/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Klaviyo / Mailchimp</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="70"></div></div>
+                        <span class="skill-bar-value">7/10</span>
+                    </div>
+                </div>
+            </div>
+            <div class="skill-category">
+                <div class="skill-category-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 18 2 2 4-4"/><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M6 21h12"/></svg>
+                    Projektmanagement
+                </div>
+                <div class="skill-bar-list">
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Asana</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="90"></div></div>
+                        <span class="skill-bar-value">9/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Jira</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="60"></div></div>
+                        <span class="skill-bar-value">6/10</span>
+                    </div>
+                    <div class="skill-bar-item">
+                        <span class="skill-bar-label">Stakeholder Mgmt</span>
+                        <div class="skill-bar-track"><div class="skill-bar-fill" data-level="90"></div></div>
+                        <span class="skill-bar-value">9/10</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Projects -->
+<section class="section" id="projects">
+    <div class="section-header fade-in">
+        <div class="section-label">Projektideen für EK</div>
+        <h2 class="section-title">Innovation für Retail Solutions</h2>
+    </div>
+
+    <div class="projects-grid">
+        <!-- Project 1: Review Tool -->
+        <div class="project-card fade-in" data-color="blue">
+            <div class="project-banner"></div>
+            <div class="project-body">
+                <div class="project-phase">Quick Win &middot; 3-6 Monate</div>
+                <div class="project-title">Intelligentes Bewertungsmanagement für Händler</div>
+                <div class="project-desc">
+                    Ein White-Label-Bewertungstool, das EK-Handelspartner bei ihren Endkunden einsetzen:
+                    Positive Bewertungen werden gezielt auf Google My Business und relevante Plattformen gelenkt.
+                    Negatives Feedback wird intern an den Händler weitergeleitet &mdash; ohne öffentliche Sichtbarkeit.
+                </div>
+                <ul class="project-features">
+                    <li>NPS-basierter Routing-Mechanismus: Score &ge;8 &rarr; Google-Bewertung; &lt;8 &rarr; internes Feedback-Formular</li>
+                    <li>QR-Code &amp; NFC-Aufsteller für stationäre Geschäfte</li>
+                    <li>Dashboard für Händler: Bewertungstrends, Sentiment-Analyse, Response-Management</li>
+                    <li>Automatische Benachrichtigungen bei negativem Feedback</li>
+                    <li>KI-gestützte Antwortvorschläge für Google-Rezensionen</li>
+                </ul>
+                <div class="project-tech">
+                    <span>API-First</span>
+                    <span>Google My Business API</span>
+                    <span>Microservice</span>
+                    <span>NLP/Sentiment</span>
+                    <span>Local SEO</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project 2: CRM/Newsletter -->
+        <div class="project-card fade-in" data-color="green">
+            <div class="project-banner"></div>
+            <div class="project-body">
+                <div class="project-phase">Strategisch &middot; 6-12 Monate</div>
+                <div class="project-title">Händler-CRM & Newsletter-Plattform</div>
+                <div class="project-desc">
+                    Ein leichtgewichtiges CRM für EK-Handelspartner, das Endkunden-Daten zentral verwaltet
+                    und automatisierte Newsletter- und Lifecycle-Kampagnen ermöglicht &mdash; als Managed Service
+                    von EK für die angeschlossenen Händler.
+                </div>
+                <ul class="project-features">
+                    <li>Multi-Tenant CRM: Jeder Händler hat eigenen Workspace, EK hat Überblick</li>
+                    <li>Vorgefertigte Newsletter-Templates je Geschäftsfeld (Home, Fashion, Sport, etc.)</li>
+                    <li>Automatisierte Trigger-Mails (Willkommen, Geburtstag, Reaktivierung)</li>
+                    <li>Integration mit bestehenden EK-Plattformen via API/SSO</li>
+                    <li>DSGVO-konforme Opt-in-Verwaltung und Consent-Management</li>
+                </ul>
+                <div class="project-tech">
+                    <span>Multi-Tenant</span>
+                    <span>SSO-Integration</span>
+                    <span>E-Mail API</span>
+                    <span>DSGVO</span>
+                    <span>Cloud</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project 3: Retail Media -->
+        <div class="project-card fade-in" data-color="orange">
+            <div class="project-banner"></div>
+            <div class="project-body">
+                <div class="project-phase">Vision &middot; 12+ Monate</div>
+                <div class="project-title">Retail Media Network für EK-Händler</div>
+                <div class="project-desc">
+                    Aufbau einer Retail-Media-Plattform, über die Lieferanten und Marken
+                    Werbeplätze auf den EK-Plattformen und bei Handelspartnern buchen können &mdash;
+                    ein neues Profitcenter nach dem Vorbild von „Marketing as a Service".
+                </div>
+                <ul class="project-features">
+                    <li>Self-Service-Portal für Lieferanten: Kampagnen buchen, Targeting, Reporting</li>
+                    <li>Sponsored Products & Banner Ads auf EK-Web-Plattformen</li>
+                    <li>Performance-Dashboard mit Echtzeit-KPIs (Impressions, Clicks, ROAS)</li>
+                    <li>A/B-Testing-Framework für Anzeigenformate und Platzierungen</li>
+                    <li>Monetarisierung der Handelspartner-Reichweite als Service</li>
+                </ul>
+                <div class="project-tech">
+                    <span>Ad-Tech</span>
+                    <span>Microservices</span>
+                    <span>Analytics</span>
+                    <span>A/B Testing</span>
+                    <span>API-First</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Motivation -->
+<section class="section" id="motivation" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); max-width: 100%; padding-left: 0; padding-right: 0;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 2rem;">
+        <div class="section-header fade-in">
+            <div class="section-label">Warum EK &middot; Warum diese Rolle</div>
+            <h2 class="section-title">Warum diese Rolle, warum EK</h2>
+        </div>
+        <div class="motivation-grid fade-in">
+            <div class="motivation-text">
+                <p>
+                    Mein Bruder Valentin arbeitet seit über 20 Jahren bei EK, deshalb kenne ich das Unternehmen schon lange. Auf die Stelle selbst bin ich durch Yannick aufmerksam geworden, der die Position zuletzt besetzt hat. Ihn durfte ich privat kennenlernen und habe ihn bei seinem Shopify Shop unterstützt. Durch beide habe ich einen guten Einblick bekommen, was sich im Bereich Retail Solutions tut. Das hat mich sofort angesprochen, weil es genau das zusammenbringt, was mich antreibt: Technologie, Handel und echte Probleme lösen.
+                </p>
+                <p>
+                    Ich komme aus dem digitalen Marketing, habe aber in den letzten Jahren immer stärker die technische Seite übernommen. Bei PsyCommerce bin ich in erster Linie Projektleiter: Ich betreue C Level Kunden, koordiniere ihre Shops im Bereich A/B Testing und steuere ein Team aus Entwicklern und Designern. Um dem Team Arbeit abzunehmen und Prozesse schlanker zu gestalten, habe ich mich intensiv mit Automatisierungen und KI beschäftigt und über 20 Prozesse mit API Anbindungen aufgebaut. Privat habe ich eigene Tools entwickelt: Chrome Extensions mit Supabase Backend, eine KI Applikation mit Google OAuth, automatisierte Datenpipelines. Ich sehe die Zukunft in KI und beschäftige mich täglich damit, auch privat.
+                </p>
+                <p>
+                    Was mich an Code reizt im Vergleich zum Marketing: das direkte Feedback. Wenn etwas nicht funktioniert, sehe ich es sofort und kann weiter recherchieren und iterieren. Im Marketing kommt das Feedback oft erst Wochen später, wenn die Kampagne live ist. Durch Vibe Coding und KI kann ich heute Ideen schnell prototypen und validieren. Das hat mir gezeigt, dass meine eigentliche Stärke darin liegt, Probleme zu erkennen, Lösungen zu konzipieren und ein Team so zu koordinieren, dass sie auch umgesetzt werden.
+                </p>
+                <p>
+                    Bei porta habe ich bereits im Retail Umfeld gearbeitet, mit Omnichannel Fokus und einem B2B Modell namens „Marketing as a Service", das ich als eigenes Profitcenter aufgebaut habe. Dieses Verständnis für den Handel, kombiniert mit meiner technischen Entwicklung der letzten Jahre, passt gut zu dem, was EK im Bereich Retail Solutions vorhat. 3.800 Handelspartner mit 7.800 Geschäften bedeuten echtes Potenzial, und ich würde gerne daran mitarbeiten, dieses Potenzial in digitale Produkte zu übersetzen.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Education -->
+<section class="section" id="education">
+    <div class="section-header fade-in">
+        <div class="section-label">Ausbildung & Engagement</div>
+        <h2 class="section-title">Akademischer Hintergrund</h2>
+    </div>
+    <div class="edu-grid fade-in">
+        <div class="edu-card">
+            <div class="edu-degree">BA, International Business Administration</div>
+            <div class="edu-school">FH des Mittelstands Bielefeld &middot; 2014&ndash;2017</div>
+            <div class="edu-detail">Thesis: Business Model Innovation (2,3)</div>
+            <div class="edu-detail">Controlling 1,0 &middot; Marketing 2,0</div>
+        </div>
+        <div class="edu-card">
+            <div class="edu-degree">Jurymitglied Kickstart@TH OWL</div>
+            <div class="edu-school">TH Ostwestfalen-Lippe Lemgo</div>
+            <div class="edu-detail">Bewertung und fachliche Beurteilung von Startup-Teams</div>
+        </div>
+        <div class="edu-card">
+            <div class="edu-degree">Gast-Tutor Marketing</div>
+            <div class="edu-school">TH Ostwestfalen-Lippe Lemgo</div>
+            <div class="edu-detail">Vorträge zu Meta Ads, Funnel-Strategien und Testing</div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <h2>Let's build the future of retail.</h2>
+        <p>Bereit für ein Gespräch über digitale Innovation bei EK.</p>
+        <div class="footer-links">
+            <a href="mailto:markusgeiger@t-online.de" class="footer-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                E-Mail schreiben
+            </a>
+            <a href="tel:+491706922229" class="footer-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Anrufen
+            </a>
+        </div>
+    </div>
+</footer>
+
+</div><!-- end cvContent -->
+
+<script>
+    // Password Protection
+    const HASH = '1c8d191755b6fc15977c4742dc2b06b3ec00518982289d5068ba7e13424bff66';
+
+    async function sha256(text) {
+        const data = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function checkPassword() {
+        const input = document.getElementById('pwInput');
+        const hash = await sha256(input.value);
+        if (hash === HASH) {
+            document.getElementById('pwOverlay').classList.add('hidden');
+            document.getElementById('cvContent').classList.remove('content-hidden');
+            sessionStorage.setItem('cv_auth', '1');
+        } else {
+            input.classList.add('error');
+            setTimeout(() => input.classList.remove('error'), 500);
+            input.value = '';
+        }
+    }
+
+    document.getElementById('pwBtn').addEventListener('click', checkPassword);
+    document.getElementById('pwInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') checkPassword();
+    });
+
+    if (sessionStorage.getItem('cv_auth') === '1') {
+        document.getElementById('pwOverlay').classList.add('hidden');
+        document.getElementById('cvContent').classList.remove('content-hidden');
+    }
+
+    // Timeline Toggle
+    function toggleTimeline(btn) {
+        const item = btn.closest('.timeline-item');
+        item.classList.toggle('open');
+    }
+
+    // Scroll Animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                entry.target.querySelectorAll('.skill-bar-fill').forEach(bar => {
+                    setTimeout(() => { bar.style.width = bar.dataset.level + '%'; }, 200);
+                });
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Active Nav Link
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if (window.scrollY >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+</body>
+</html>
